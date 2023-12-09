@@ -1,0 +1,26 @@
+image: docker:latest
+
+stages:
+  - build
+  - publish
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
+build:
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:latest .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+publish:
+  stage: publish
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest
+    - docker tag $CI_REGISTRY_IMAGE:latest hello_world-docker-hub-azzi/hello-world:latest
+    - docker push hello_world-docker-hub-azzi/hello-world:latest
